@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { icon, LatLng, latLng, Map, marker, tileLayer } from 'leaflet';
+import { Complaint } from 'src/app/utils/interfaces';
 import { AddMarkerComponent } from './add-marker/add-marker.component';
 @Component({
 	selector: 'app-map',
@@ -63,28 +64,36 @@ export class MapComponent implements OnInit {
 
 	mapClick(event: any) {
 		const dialogRef = this.dialog.open(AddMarkerComponent, {
-			width: '250px',
+			width: '360px',
 			data: { latLng: event.latlng },
 		});
 
-		dialogRef.afterClosed().subscribe((result: boolean) => {
+		dialogRef.afterClosed().subscribe((result: Complaint) => {
 			if (result) {
-				this.createMarker(event.latlng, {}, new Date().getTime().toString());
+				this.createMarker(event.latlng, {}, result);
 			}
 		});
 	}
 
-	private createMarker(latLng: LatLng, options?: any, id?: string) {
+	private createMarker(latLng: LatLng, options?: any, complaint?: Complaint) {
 		const pin = marker(latLng, {
 			icon: icon({
 				iconSize: [50, 50],
 				iconUrl: 'assets/pin.png',
 				...options,
 			}),
-			attribution: id,
-		}).on('click', (ev) => {
-			console.log(ev);
 		});
+
+		if (complaint) {
+			pin.bindPopup(`
+				<div class="complaint">
+					<strong>Tipo</strong>
+					<p>${complaint.type}</p>
+					<strong>Descrição</strong>
+					<p>${complaint.description}</p>
+				</div>
+			`);
+		}
 
 		this.layers.push(pin);
 	}
